@@ -1,5 +1,15 @@
 package ezvcard.io.json;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import ezvcard.VCardDataType;
+import ezvcard.io.json.namesilo.NamesiloProperties;
+import ezvcard.io.json.namesilo.NamesiloProperty;
+import ezvcard.io.json.namesilo.NamesiloValue;
+import ezvcard.parameter.VCardParameters;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
@@ -7,14 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-
-import ezvcard.VCardDataType;
-import ezvcard.parameter.VCardParameters;
 
 /*
  Copyright (c) 2012-2020, Michael Angstadt
@@ -114,6 +116,10 @@ public class JCardRawReader implements Closeable {
 			if (strict) {
 				//the parser was expecting the jCard to be there
 				if (prev != JsonToken.START_ARRAY) {
+					if (prev == JsonToken.START_OBJECT && "properties".equals(parser.getCurrentName())) {
+						parseNamesilo();
+						return;
+					}
 					throw new JCardParseException(JsonToken.START_ARRAY, prev);
 				}
 				if (cur == JsonToken.START_ARRAY) {
@@ -150,6 +156,182 @@ public class JCardRawReader implements Closeable {
 		}
 
 		check(JsonToken.END_ARRAY, parser.nextToken());
+	}
+
+	/**
+	 * Frickin namesilo doesn't adhere to the vcard spec at all. Rather they provide their own custom json. Which we
+	 * attempt to parse here.
+	 *
+	 * "vcardArray": {
+	 *   "properties": [
+	 *     {
+	 *       "name": "FN",
+	 *       "value": {
+	 *         "stringValue": "Domain Administrator",
+	 *         "typeName": "text"
+	 *       }
+	 *     },
+	 *     {
+	 *       "name": "ADR",
+	 *       "value": {
+	 *         "components": [
+	 *           {
+	 *             "name": "pobox",
+	 *             "value": {
+	 *               "typeName": "text"
+	 *             }
+	 *           },
+	 *           {
+	 *             "name": "ext",
+	 *             "value": {
+	 *               "typeName": "text"
+	 *             }
+	 *           },
+	 *           {
+	 *             "name": "street",
+	 *             "value": {
+	 *               "values": [
+	 *                 {
+	 *                   "stringValue": "1928 E. Highland Ave. Ste F104",
+	 *                   "typeName": "text"
+	 *                 },
+	 *                 {
+	 *                   "stringValue": "PMB# 255",
+	 *                   "typeName": "text"
+	 *                 }
+	 *               ],
+	 *               "typeName": "text"
+	 *             }
+	 *           },
+	 *           {
+	 *             "name": "locality",
+	 *             "value": {
+	 *               "values": [
+	 *                 {
+	 *                   "stringValue": "Phoenix",
+	 *                   "typeName": "text"
+	 *                 }
+	 *               ],
+	 *               "typeName": "text"
+	 *             }
+	 *           },
+	 *           {
+	 *             "name": "region",
+	 *             "value": {
+	 *               "values": [
+	 *                 {
+	 *                   "stringValue": "AZ",
+	 *                   "typeName": "text"
+	 *                 }
+	 *               ],
+	 *               "typeName": "text"
+	 *             }
+	 *           },
+	 *           {
+	 *             "name": "code",
+	 *             "value": {
+	 *               "values": [
+	 *                 {
+	 *                   "stringValue": "85016",
+	 *                   "typeName": "text"
+	 *                 }
+	 *               ],
+	 *               "typeName": "text"
+	 *             }
+	 *           },
+	 *           {
+	 *             "name": "country",
+	 *             "value": {
+	 *               "values": [
+	 *                 {
+	 *                   "stringValue": "US",
+	 *                   "typeName": "text"
+	 *                 }
+	 *               ],
+	 *               "typeName": "text"
+	 *             }
+	 *           }
+	 *         ],
+	 *         "typeName": "text"
+	 *       }
+	 *     },
+	 *     {
+	 *       "name": "ORG",
+	 *       "value": {
+	 *         "components": [
+	 *           {
+	 *             "name": "name",
+	 *             "value": {
+	 *               "stringValue": "See PrivacyGuardian.org",
+	 *               "typeName": "text"
+	 *             }
+	 *           }
+	 *         ],
+	 *         "typeName": "text"
+	 *       }
+	 *     },
+	 *     {
+	 *       "name": "TEL",
+	 *       "parameters": {},
+	 *       "value": {
+	 *         "stringValue": "tel:+0.3478717726",
+	 *         "typeName": "uri"
+	 *       }
+	 *     },
+	 *     {
+	 *       "name": "EMAIL",
+	 *       "value": {
+	 *         "stringValue": "pw-a3b2c5eac8da5223be1aea812b2b1e3b@privacyguardian.org",
+	 *         "typeName": "text"
+	 *       }
+	 *     }
+	 *   ]
+	 * }
+	 * @throws IOException upon parse failure
+	 */
+	private void parseNamesilo() throws IOException {
+		listener.beginVCard();
+		NamesiloProperties properties = parser.readValueAs(NamesiloProperties.class);
+
+		for (NamesiloProperty property : properties.getProperties()) {
+			String propertyName = property.getName();
+			if (propertyName == null || "".equalsIgnoreCase(propertyName))
+				continue;
+
+			NamesiloValue value = property.getValue();
+			if (value == null)
+				continue;
+
+			String dataTypeStr = "unknown";
+			if (value.getTypeName() != null)
+				dataTypeStr = value.getTypeName().toLowerCase();
+			VCardDataType dataType = "unknown".equals(dataTypeStr) ? null : VCardDataType.get(dataTypeStr);
+
+			VCardParameters parameters = new VCardParameters();
+			String group = null;
+
+			List<JsonValue> values = new ArrayList<>();
+			if (value.getStringValue() != null) {
+				values.add(new JsonValue(value.getStringValue()));
+			} else if (value.getComponents() != null && !value.getComponents().isEmpty()) {
+				List<JsonValue> subvals = new ArrayList<>();
+				for (NamesiloProperty component : value.getComponents()) {
+					Object v = component.getValue().getValue();
+					if (v instanceof List)
+						subvals.add(new JsonValue(((List) v)));
+					else
+						subvals.add(new JsonValue(v));
+				}
+				values.add(new JsonValue(subvals));
+			}
+			JCardValue jCardValue = new JCardValue(values);
+
+			listener.readProperty(group, propertyName.toLowerCase(), parameters, dataType, jCardValue);
+		}
+
+
+
+
 	}
 
 	/**
