@@ -3,9 +3,9 @@
 	<groupId>com.googlecode.ez-vcard</groupId>
 	<artifactId>ez-vcard</artifactId>
 	<packaging>bundle</packaging> <!-- "bundle" used for OSGi support -->
-	<version>0.11.3-SNAPSHOT</version>
+	<version>0.12.0-riskiq</version>
 	<name>ez-vcard</name>
-	<url>http://github.com/mangstadt/ez-vcard</url>
+	<url>https://github.com/RiskIQ/ez-vcard</url>
 	<inceptionYear>2012</inceptionYear>
 	<organization>
 		<name>Michael Angstadt</name>
