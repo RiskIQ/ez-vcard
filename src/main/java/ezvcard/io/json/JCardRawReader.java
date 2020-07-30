@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import ezvcard.VCard;
 import ezvcard.VCardDataType;
 import ezvcard.io.json.namesilo.NamesiloProperties;
 import ezvcard.io.json.namesilo.NamesiloProperty;
 import ezvcard.io.json.namesilo.NamesiloValue;
 import ezvcard.parameter.VCardParameters;
+import ezvcard.property.Address;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -123,7 +125,13 @@ public class JCardRawReader implements Closeable {
 					throw new JCardParseException(JsonToken.START_ARRAY, prev);
 				}
 				if (cur == JsonToken.START_ARRAY) {
-					parseNamecheap();
+					if (parseNamecheap())
+						return;
+					if (parseDirectnic())
+						return;
+				}
+				if (cur == JsonToken.START_OBJECT) {
+					parseOnomae();
 					return;
 				}
 				if (cur != JsonToken.VALUE_STRING) {
@@ -328,10 +336,6 @@ public class JCardRawReader implements Closeable {
 
 			listener.readProperty(group, propertyName.toLowerCase(), parameters, dataType, jCardValue);
 		}
-
-
-
-
 	}
 
 	/**
@@ -354,11 +358,116 @@ public class JCardRawReader implements Closeable {
 	 *   ]
 	 * ]
 	 *
+	 * @return true if parse was successful
 	 * @throws IOException upon parse failure
 	 */
-	private void parseNamecheap() throws IOException {
-		listener.beginVCard();
-		parsePropertiesUnarrayed(true);
+	private boolean parseNamecheap() throws IOException {
+		try {
+			listener.beginVCard();
+			parsePropertiesUnarrayed(true);
+			return true;
+		} catch (JCardParseException pe) {
+			return false;
+		}
+	}
+
+	/**
+	 * directnic omits the "vcard" value string
+	 * @return true if parse was successful
+	 * @throws IOException
+	 */
+	private boolean parseDirectnic() throws IOException {
+		int loop = 1;
+		do {
+			if (loop > 0)
+				parser.nextToken();
+			parseProperty();
+			loop++;
+		} while (parser.nextToken() != JsonToken.END_ARRAY);
+		return true;
+	}
+
+	/**
+	 * onomae provides invalid vcard. they wrap the vcard in an Object, and then nest the properties inside two arrays
+	 * instead of just a single one
+	 *
+	 * "vcardArray": [
+	 *   {
+	 *     "vcard": [
+	 *       [
+	 *         [
+	 *           "version",
+	 *           {},
+	 *           "text",
+	 *           "4.0"
+	 *         ],
+	 *         [
+	 *           "fn",
+	 *           {},
+	 *           "text",
+	 *           "Whois Privacy Protection Service by onamae.com"
+	 *         ],
+	 *         [
+	 *           "org",
+	 *           {},
+	 *           "text",
+	 *           "Whois Privacy Protection Service by onamae.com"
+	 *         ],
+	 *         [
+	 *           "adr",
+	 *           {
+	 *             "type": "work"
+	 *           },
+	 *           "text",
+	 *           [
+	 *             "Cerulean Tower 11F",
+	 *             "26-1 Sakuragaoka-cho",
+	 *             "Shibuya-ku",
+	 *             "Tokyo",
+	 *             "150-8512",
+	 *             "JP"
+	 *           ]
+	 *         ],
+	 *         [
+	 *           "tel",
+	 *           {
+	 *             "type": "voice"
+	 *           },
+	 *           "text",
+	 *           "81.35456256"
+	 *         ],
+	 *         [
+	 *           "tel",
+	 *           {
+	 *             "type": "fax"
+	 *           },
+	 *           "text",
+	 *           ""
+	 *         ]
+	 *       ]
+	 *     ]
+	 *   }
+	 * ]
+	 *
+	 * @throws IOException upon parse failure
+	 */
+	private void parseOnomae() throws IOException {
+		if (parser.getCurrentToken() == JsonToken.START_OBJECT && parser.nextToken() == JsonToken.FIELD_NAME && "vcard".equalsIgnoreCase(parser.getCurrentName())) {
+			listener.beginVCard();
+
+			checkNext(JsonToken.START_ARRAY);
+			checkNext(JsonToken.START_ARRAY);
+
+			//read properties
+			while (parser.nextToken() != JsonToken.END_ARRAY) { //until we reach the end properties array
+				checkCurrent(JsonToken.START_ARRAY);
+				parser.nextToken();
+				parseProperty();
+			}
+			check(JsonToken.END_ARRAY, parser.nextToken());
+		}
+		check(JsonToken.END_OBJECT, parser.nextToken());
+
 	}
 
 	/**

@@ -1,0 +1,54 @@
+{
+  "vcardArray": [
+    [
+      [
+        "fn",
+        {},
+        "text",
+        "Damon DoRemus"
+      ],
+      [
+        "org",
+        {},
+        "text",
+        "JD Young"
+      ],
+      [
+        "adr",
+        {},
+        "text",
+        [
+          "8221 E. 61st Street. Suite B",
+          "",
+          "",
+          "Tulsa",
+          "OK",
+          "74133",
+          "US"
+        ]
+      ],
+      [
+        "tel",
+        {
+          "type": "voice"
+        },
+        "uri",
+        "tel:+1.9183694335"
+      ],
+      [
+        "tel",
+        {
+          "type": "fax"
+        },
+        "uri",
+        "tel:"
+      ],
+      [
+        "email",
+        {},
+        "text",
+        "dns@geekrescue.com"
+      ]
+    ]
+  ]
+}
