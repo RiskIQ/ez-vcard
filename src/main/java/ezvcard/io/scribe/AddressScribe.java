@@ -2,6 +2,8 @@ package ezvcard.io.scribe;
 
 import static ezvcard.util.StringUtils.join;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.mangstadt.vinnie.io.VObjectPropertyValues.SemiStructuredValueBuilder;
@@ -188,7 +190,10 @@ public class AddressScribe extends VCardPropertyScribe<Address> {
 
 	@Override
 	protected Address _parseJson(JCardValue value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
-		StructuredValueIterator it = new StructuredValueIterator(value.asStructured());
+		List<List<String>> structured = value.asStructured();
+		if (structured.size() == 6)
+			structured.add(0, Collections.emptyList());
+		StructuredValueIterator it = new StructuredValueIterator(structured);
 		return parseStructuredValue(it);
 	}
 
