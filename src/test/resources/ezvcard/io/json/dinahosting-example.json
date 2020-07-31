@@ -1,0 +1,39 @@
+{
+  "vcardArray": [
+    "vcard",
+    [
+      [
+        "version",
+        {},
+        "text",
+        "4.0"
+      ],
+      [
+        "org",
+        [],
+        "text",
+        "NULL"
+      ],
+      [
+        "adr",
+        {
+          "cc": "ES"
+        },
+        "text",
+        [
+          "",
+          "",
+          "",
+          "Barcelona",
+          "",
+          ""
+        ]
+      ],
+      [
+        "CONTACT-URI",
+        "uri",
+        "https://dinahosting.com/dominios/contacto-whois/dominio/ysana.info"
+      ]
+    ]
+  ]
+}

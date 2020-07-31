@@ -526,13 +526,19 @@ public class JCardRawReader implements Closeable {
 
 		//get parameters
 		VCardParameters parameters = parseParameters();
-
+		if (parameters != null) {
+			// advance the parser to the data type string if we successfully parsed parameters.
+			//get data type
+			checkNext(JsonToken.VALUE_STRING);
+		} else {
+			// if parameters is null, then parameters were not present and the parser is already currently on the
+			// data type string.
+			parameters = new VCardParameters();
+		}
 		//get group
 		List<String> removed = parameters.removeAll("group");
 		String group = removed.isEmpty() ? null : removed.get(0);
 
-		//get data type
-		checkNext(JsonToken.VALUE_STRING);
 		String dataTypeStr = parser.getText().toLowerCase();
 		VCardDataType dataType = "unknown".equals(dataTypeStr) ? null : VCardDataType.get(dataTypeStr);
 
@@ -544,7 +550,24 @@ public class JCardRawReader implements Closeable {
 	}
 
 	private VCardParameters parseParameters() throws IOException {
-		checkNext(JsonToken.START_OBJECT);
+		JsonToken next = parser.nextToken();
+		if (next == JsonToken.START_ARRAY) {
+			// name.com registrar sometimes provides parameters in an array instead of an object. every instance we've
+			// seen of the array so far is empty, so we're just ignoring it for now
+			while (parser.nextToken() != JsonToken.END_ARRAY) {
+			}
+			return new VCardParameters();
+		} else if (next == JsonToken.VALUE_STRING) {
+			// dinahosting provides contact-uri properties with no parameters field. we just ignore them. ie
+			//  [
+			//     "CONTACT-URI",
+			//     "uri",
+			//     "https://dinahosting.com/dominios/contacto-whois/dominio/ysana.info"
+			// ]
+			return null;
+		}
+
+		checkCurrent(JsonToken.START_OBJECT);
 
 		VCardParameters parameters = new VCardParameters();
 		while (parser.nextToken() != JsonToken.END_OBJECT) {
