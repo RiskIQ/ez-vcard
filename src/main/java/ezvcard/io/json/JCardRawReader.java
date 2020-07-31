@@ -4,13 +4,11 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import ezvcard.VCard;
 import ezvcard.VCardDataType;
 import ezvcard.io.json.namesilo.NamesiloProperties;
 import ezvcard.io.json.namesilo.NamesiloProperty;
 import ezvcard.io.json.namesilo.NamesiloValue;
 import ezvcard.parameter.VCardParameters;
-import ezvcard.property.Address;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -517,7 +515,13 @@ public class JCardRawReader implements Closeable {
 
 	private void parseProperty() throws IOException {
 		//get property name
-		checkCurrent(JsonToken.VALUE_STRING);
+		if (parser.getCurrentToken() != JsonToken.VALUE_STRING) {
+			if (parser.getCurrentToken() == JsonToken.END_ARRAY) {
+				// an empty property array. we can safely ignore it.
+				return;
+			}
+			throw new JCardParseException(JsonToken.VALUE_STRING, parser.getCurrentToken());
+		}
 		String propertyName = parser.getValueAsString().toLowerCase();
 
 		//get parameters
