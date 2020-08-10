@@ -191,6 +191,8 @@ public class AddressScribe extends VCardPropertyScribe<Address> {
 	@Override
 	protected Address _parseJson(JCardValue value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
 		List<List<String>> structured = value.asStructured();
+		if (structured.size() == 5)
+			structured.add(0, Collections.emptyList());
 		if (structured.size() == 6)
 			structured.add(0, Collections.emptyList());
 		StructuredValueIterator it = new StructuredValueIterator(structured);
