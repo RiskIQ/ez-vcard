@@ -1,0 +1,65 @@
+{
+  "vcardArray": [
+    [
+      "version",
+      {},
+      "text",
+      "4.0"
+    ],
+    [
+      "fn",
+      {},
+      "text",
+      "REACTIVATION PERIOD"
+    ],
+    [
+      "kind",
+      {},
+      "text",
+      "individual"
+    ],
+    [
+      "org",
+      {},
+      "text",
+      "NAMECHEAP"
+    ],
+    [
+      "adr",
+      {},
+      "text",
+      [
+        "11400 W. OLYMPIC BLVD, SUITE 200",
+        "LOS ANGELES",
+        "CA",
+        "90064",
+        "US"
+      ]
+    ],
+    [
+      "tel",
+      {
+        "type": [
+          "voice"
+        ]
+      },
+      "uri",
+      "tel:+1.6613102107"
+    ],
+    [
+      "tel",
+      {
+        "type": [
+          "fax"
+        ]
+      },
+      "uri",
+      "fax:+1.6613102107"
+    ],
+    [
+      "email",
+      {},
+      "text",
+      "reactivation-pending@namecheap.com"
+    ]
+  ]}
