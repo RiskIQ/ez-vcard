@@ -123,6 +123,17 @@ public class JCardRawReader implements Closeable {
 					throw new JCardParseException(JsonToken.START_ARRAY, prev);
 				}
 				if (cur == JsonToken.START_ARRAY) {
+					// gets tricky here, as we need to accommodate all the crappy formatting provided by the various
+					// registrars without advancing the parser token past the point of no return. thus, we only advance
+					// as far as needed in order to determine who the registrar is and apply the proper parsing.
+					JsonToken next = parser.nextToken();
+					String propertyName = parser.getValueAsString();
+					if ("vcard".equalsIgnoreCase(propertyName)) {
+						if (parse101Domain())
+							return;
+						throw new JCardParseException("Invalid value for first token: expected \"vcard\" , was \"" + parser.getValueAsString() + "\"", JsonToken.VALUE_STRING, cur);
+					}
+
 					if (parseNamecheap())
 						return;
 					if (parseDirectnic())
@@ -362,6 +373,16 @@ public class JCardRawReader implements Closeable {
 	private boolean parseNamecheap() throws IOException {
 		try {
 			listener.beginVCard();
+			parsePropertiesUnarrayed(false);
+			return true;
+		} catch (JCardParseException pe) {
+			return false;
+		}
+	}
+
+	private boolean parse101Domain() throws IOException {
+		try {
+			listener.beginVCard();
 			parsePropertiesUnarrayed(true);
 			return true;
 		} catch (JCardParseException pe) {
@@ -375,12 +396,9 @@ public class JCardRawReader implements Closeable {
 	 * @throws IOException
 	 */
 	private boolean parseDirectnic() throws IOException {
-		int loop = 1;
 		do {
-			if (loop > 0)
-				parser.nextToken();
+			parser.nextToken();
 			parseProperty();
-			loop++;
 		} while (parser.nextToken() != JsonToken.END_ARRAY);
 		return true;
 	}

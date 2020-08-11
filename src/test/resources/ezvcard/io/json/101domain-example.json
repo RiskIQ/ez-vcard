@@ -1,0 +1,47 @@
+{
+  "vcardArray": [
+    [
+      "vcard"
+    ],
+    [
+      "version",
+      {},
+      "text",
+      "4.0"
+    ],
+    [
+      "fn",
+      {},
+      "text",
+      "101domain GRS Ltd."
+    ],
+    [
+      "org",
+      {},
+      "text",
+      "101domain GRS Ltd."
+    ],
+    [
+      "role",
+      {},
+      "text",
+      "registrar"
+    ],
+    [
+      "adr",
+      {},
+      "text",
+      [
+        "",
+        "",
+        "4th Floor, International House",
+        "3 Harbourmaster Place",
+        "IFSC",
+        "Dublin",
+        "D",
+        "D01 K8F1",
+        "IE"
+      ]
+    ]
+  ]
+}
