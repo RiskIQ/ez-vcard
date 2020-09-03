@@ -172,7 +172,38 @@ public class JCardRawReader implements Closeable {
 			throw jpe;
 		}
 
-		check(JsonToken.END_ARRAY, parser.nextToken());
+		if (parser.nextToken() != JsonToken.END_ARRAY) {
+			if (parser.getCurrentToken() == JsonToken.START_ARRAY) {
+				JsonToken next = parser.nextToken();
+				if (next == JsonToken.VALUE_STRING) {
+					// 35.com sometimes includes vcard properties in sibling arrays, rather than all nested in a single
+					// array. we just skip all properties in the sibling array.
+					parser.skipChildren();
+					return;
+				} else if (next == JsonToken.START_ARRAY) {
+					if (parser.nextToken() == JsonToken.VALUE_STRING) {
+						// pandi doesn't nest the vard properties inside of a parent array, but rather as part of the
+						// vcardArray array. except each property is double nested. ugh.
+						parseProperty();
+						checkNext(JsonToken.END_ARRAY);
+						while (parser.nextToken() != JsonToken.END_ARRAY) {
+							checkCurrent(JsonToken.START_ARRAY);
+							checkNext(JsonToken.START_ARRAY);
+							parser.nextToken();
+							parseProperty();
+							checkNext(JsonToken.END_ARRAY);
+						}
+						return;
+					}
+				}
+			}
+			throw new JCardParseException(JsonToken.END_ARRAY, parser.currentToken());
+		}
+	}
+
+	private void parsePandiProperties() {
+		boolean first = true;
+
 	}
 
 	/**
