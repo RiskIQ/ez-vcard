@@ -1,0 +1,24 @@
+{
+  "vcardArray": [
+    "vcard",
+    [
+      [
+        "version",
+        [],
+        "text",
+        "4.0"
+      ],
+      [
+        "fn",
+        [],
+        "text",
+        "35.com, Inc."
+      ]
+    ],
+    [
+      "contact-uri",
+      [],
+      "uri",
+      "http:\/\/rdap.35.com\/contact\/domain\/hongdatrans.com"
+    ]
+  ]}

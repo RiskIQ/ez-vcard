@@ -1,0 +1,62 @@
+{
+  "vcardArray": [
+    "vcard",
+    [
+      [
+        "version",
+        {},
+        "text",
+        "4.0"
+      ]
+    ],
+    [
+      [
+        "org",
+        {
+          "type": "work"
+        },
+        "text",
+        "Digital Registra"
+      ]
+    ],
+    [
+      [
+        "tel",
+        {
+          "type": "voice"
+        },
+        "text",
+        "tel:0274882257"
+      ]
+    ],
+    [
+      [
+        "adr",
+        {},
+        "text",
+        [
+          "",
+          "Jl. lempongsari no. 39C",
+          "Jongkang RT/RW 12/35 Sariharjo ",
+          "Sleman",
+          "Yogyakarta",
+          "55281",
+          "ID"
+        ]
+      ]
+    ],
+    [
+      [
+        "email",
+        {
+          "type": "work"
+        },
+        "text",
+        "info@digitalregistra.co.id"
+      ]
+    ]
+  ]
+}
+
+
+
