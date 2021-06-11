@@ -1,0 +1,61 @@
+{
+  "vcardArray": [
+    [
+      "vcard",
+      [
+        [
+          "version",
+          {},
+          "text",
+          "4.0"
+        ],
+        [
+          "fn",
+          {},
+          "text",
+          "Robert James Brook"
+        ],
+        [
+          "kind",
+          {},
+          "text",
+          "individual"
+        ],
+        [
+          "adr",
+          {
+            "type": "work"
+          },
+          "text",
+          [
+            "",
+            "",
+            "32 Cardiff Rd",
+            "New Lambton Hts",
+            "NSW",
+            "2305",
+            "AU"
+          ]
+        ],
+        [
+          "tel",
+          {
+            "type": [
+              "voice"
+            ]
+          },
+          "uri",
+          "tel:+61-429465137"
+        ],
+        [
+          "email",
+          {
+            "type": "work"
+          },
+          "text",
+          "robbrook@bigpond.com"
+        ]
+      ]
+    ]
+  ]
+}
