@@ -129,8 +129,12 @@ public class JCardRawReader implements Closeable {
 					JsonToken next = parser.nextToken();
 					String propertyName = parser.getValueAsString();
 					if ("vcard".equalsIgnoreCase(propertyName)) {
-						if (parse101Domain())
+						if (parse101Domain()){
 							return;
+						}
+						if (parseDreamscapeDomain()){
+							return;
+						}
 						throw new JCardParseException("Invalid value for first token: expected \"vcard\" , was \"" + parser.getValueAsString() + "\"", JsonToken.VALUE_STRING, cur);
 					}
 
@@ -414,12 +418,28 @@ public class JCardRawReader implements Closeable {
 	private boolean parse101Domain() throws IOException {
 		try {
 			listener.beginVCard();
+			parser.nextToken();
+			parsePropertiesUnarrayed(false	);
+			return true;
+		} catch (JCardParseException pe) {
+		return false;
+
+		}
+	}
+
+	private boolean parseDreamscapeDomain() throws IOException{
+		try{
+			listener.beginVCard();
+			do{
+				parser.nextToken();
+			} while (parser.nextToken() != JsonToken.END_OBJECT);
 			parsePropertiesUnarrayed(true);
 			return true;
 		} catch (JCardParseException pe) {
 			return false;
 		}
 	}
+
 
 	/**
 	 * directnic omits the "vcard" value string
@@ -549,6 +569,8 @@ public class JCardRawReader implements Closeable {
 			loop++;
 		} while (parser.nextToken() != JsonToken.END_ARRAY);
 	}
+
+
 
 	private void parseProperties() throws IOException {
 		//start properties array
